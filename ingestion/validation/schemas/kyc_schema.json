@@ -1,1 +1,117 @@
-# Schéma de validation KYC
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KYC Schema",
+  "description": "Schéma de validation pour les données KYC (Know Your Customer).",
+  "type": "object",
+  "properties": {
+    "kyc_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Identifiant unique du dossier KYC."
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Identifiant du client lié au processus KYC."
+    },
+    "first_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Prénom du client."
+    },
+    "last_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nom du client."
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date de naissance du client (format ISO)."
+    },
+    "national_id": {
+      "type": "string",
+      "description": "Numéro de la carte nationale d'identité ou du passeport."
+    },
+    "document_type": {
+      "type": "string",
+      "enum": ["CIN", "Passport", "Residence_Permit", "Other"],
+      "description": "Type de document d'identité fourni."
+    },
+    "document_number": {
+      "type": "string",
+      "description": "Numéro du document d'identité."
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date d’émission du document."
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date d’expiration du document."
+    },
+    "address": {
+      "type": ["object", "null"],
+      "description": "Adresse principale du client.",
+      "properties": {
+        "street": { "type": "string" },
+        "city": { "type": "string" },
+        "postal_code": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "required": ["city", "country"]
+    },
+    "phone_number": {
+      "type": "string",
+      "pattern": "^\\+?[0-9\\s-]{6,20}$",
+      "description": "Numéro de téléphone du client."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Adresse email du client."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "Niveau de risque KYC évalué."
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["pending", "verified", "rejected"],
+      "description": "Statut de vérification du dossier KYC."
+    },
+    "verification_date": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Horodatage de la dernière vérification du dossier."
+    },
+    "source_system": {
+      "type": "string",
+      "description": "Système ou API ayant fourni les données KYC (ex: Onfido, OCR, govAPI)."
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "description": "Informations additionnelles pour le suivi et l’audit.",
+      "properties": {
+        "ocr_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "operator_id": { "type": "string" },
+        "review_notes": { "type": "string" }
+      }
+    }
+  },
+  "required": [
+    "kyc_id",
+    "customer_id",
+    "first_name",
+    "last_name",
+    "birth_date",
+    "document_type",
+    "document_number",
+    "risk_level",
+    "verification_status"
+  ],
+  "additionalProperties": false
+}
