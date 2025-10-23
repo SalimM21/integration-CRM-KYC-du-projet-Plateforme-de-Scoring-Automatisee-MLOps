@@ -195,4 +195,3 @@ bash deploy_connectors.sh
 - **Prometheus + Grafana** → métriques Kafka / Spark / Airflow
 - **Evidently AI** → drift de données et qualité des features
 - **ELK Stack** → logs Kafka Connect et Airflow
-
