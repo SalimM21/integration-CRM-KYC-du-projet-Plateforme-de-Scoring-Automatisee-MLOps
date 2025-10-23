@@ -1,1 +1,43 @@
 # Paramètres SparkSession
+# ---------------------------------------
+# Configuration SparkSession pour File Rouge
+# ---------------------------------------
+
+spark:
+  appName: "FileRouge_App"
+  master: "local[*]"           # Modifier selon cluster : spark://<master>:7077
+  config:
+    spark.sql.shuffle.partitions: 4
+    spark.sql.streaming.checkpointLocation: "/tmp/checkpoints"
+    spark.sql.catalog.spark_catalog: "org.apache.spark.sql.delta.catalog.DeltaCatalog"
+    spark.sql.extensions: "io.delta.sql.DeltaSparkSessionExtension"
+    spark.delta.logStore.class: "org.apache.spark.sql.delta.storage.HDFSLogStore" # Delta + S3/MinIO
+    spark.driver.memory: "2g"
+    spark.executor.memory: "2g"
+    spark.executor.cores: 2
+    spark.sql.streaming.minBatchesToRetain: 5
+    spark.sql.streaming.schemaInference: true
+
+kafka:
+  bootstrapServers: "kafka-cluster-kafka-bootstrap:9092"
+  defaultStartingOffsets: "earliest"
+  topics:
+    - crm_customers
+    - transactions
+    - kyc_responses
+  consumerGroup: "file_rouge_group"
+
+delta:
+  basePath: "/delta"
+  crmPath: "/delta/crm_customers"
+  transactionsPath: "/delta/transactions"
+  kycPath: "/delta/kyc_responses"
+
+kyc:
+  apiUrl: "https://api.kyc.example.com/check"
+  timeoutSec: 5
+
+retry:
+  maxRetries: 3
+  retryDelaySec: 5
+  dlqTopic: "transactions_dlq"
