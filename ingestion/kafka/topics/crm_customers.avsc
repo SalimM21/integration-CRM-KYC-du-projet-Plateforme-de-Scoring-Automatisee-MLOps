@@ -1,1 +1,60 @@
-# Schéma Avro pour les données CRM
+{
+  "type": "record",
+  "name": "CRMCustomer",
+  "namespace": "com.example.crm",
+  "doc": "Schéma Avro pour les données clients CRM",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "doc": "Identifiant unique du client"
+    },
+    {
+      "name": "first_name",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Prénom du client"
+    },
+    {
+      "name": "last_name",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Nom de famille du client"
+    },
+    {
+      "name": "email",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Adresse email du client"
+    },
+    {
+      "name": "phone_number",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Numéro de téléphone du client"
+    },
+    {
+      "name": "date_of_birth",
+      "type": ["null", {"type": "int", "logicalType": "date"}],
+      "default": null,
+      "doc": "Date de naissance"
+    },
+    {
+      "name": "created_at",
+      "type": {"type": "long", "logicalType": "timestamp-millis"},
+      "doc": "Date de création du client"
+    },
+    {
+      "name": "updated_at",
+      "type": ["null", {"type": "long", "logicalType": "timestamp-millis"}],
+      "default": null,
+      "doc": "Date de dernière mise à jour"
+    },
+    {
+      "name": "status",
+      "type": ["null", "string"],
+      "default": "active",
+      "doc": "Statut du client (active, inactive, prospect, etc.)"
+    }
+  ]
+}
