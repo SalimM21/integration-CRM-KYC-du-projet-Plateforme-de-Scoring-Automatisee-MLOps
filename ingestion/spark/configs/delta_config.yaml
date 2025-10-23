@@ -1,1 +1,41 @@
 # Paramètres Delta Lake
+# ---------------------------------------
+# Configuration Delta Lake pour File Rouge
+# ---------------------------------------
+
+delta:
+  # Chemins de stockage Delta Lake
+  basePath: "/delta"
+  crmCustomersPath: "/delta/crm_customers"
+  transactionsPath: "/delta/transactions"
+  kycResponsesPath: "/delta/kyc_responses"
+  analyticsPath: "/delta/analytics"
+
+  # Options générales Delta
+  format: "delta"
+  mode: "append"                # append / overwrite
+  checkpointLocation: "/tmp/delta_checkpoints"
+
+  # Options pour streaming
+  streaming:
+    minBatchesToRetain: 5
+    maxFilesPerTrigger: 1000
+    triggerInterval: "10 seconds"
+
+  # Optimisation & maintenance
+  optimize:
+    autoCompact: true
+    compactionFileSizeMB: 128
+    vacuumRetentionHours: 168
+
+  # Options S3 / MinIO
+  storage:
+    enableS3: true
+    s3Endpoint: "http://minio:9000"
+    s3AccessKey: "${MINIO_ACCESS_KEY}"
+    s3SecretKey: "${MINIO_SECRET_KEY}"
+    s3Bucket: "file-rouge-delta"
+
+  # Options de journalisation / audit
+  enableAuditLog: true
+  auditLogPath: "/delta/audit_logs"
