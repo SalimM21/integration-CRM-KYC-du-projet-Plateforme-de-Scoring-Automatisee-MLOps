@@ -1,1 +1,36 @@
-# Schéma JSON pour la validation KYC
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KYCResponse",
+  "description": "Schéma JSON pour la validation des réponses KYC",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "Identifiant unique du client"
+    },
+    "kyc_status": {
+      "type": "string",
+      "enum": ["verified", "pending", "rejected"],
+      "description": "Statut KYC du client"
+    },
+    "verification_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de vérification KYC"
+    },
+    "document_type": {
+      "type": ["string", "null"],
+      "description": "Type de document fourni pour KYC"
+    },
+    "document_number": {
+      "type": ["string", "null"],
+      "description": "Numéro du document fourni pour KYC"
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Commentaires ou observations"
+    }
+  },
+  "required": ["customer_id", "kyc_status", "verification_date"],
+  "additionalProperties": false
+}
