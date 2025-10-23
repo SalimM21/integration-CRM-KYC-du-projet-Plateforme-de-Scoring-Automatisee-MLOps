@@ -1,1 +1,27 @@
-# (Optionnel) Connecteur REST API pour KYC
+{
+  "name": "kyc-api-source",
+  "config": {
+    "connector.class": "io.github.jeffpalm.kafka.connect.rest.RestSourceConnector",
+    "tasks.max": "1",
+    "topic": "kyc_responses",
+
+    "rest.url": "${KYC_API_URL}",            
+    "http.method": "GET",
+    "poll.interval.ms": "300000",             
+
+    "request.headers": "Authorization:Bearer ${KYC_API_TOKEN}",
+
+    "response.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "response.converter.schemas.enable": "false",
+
+    "errors.tolerance": "all",
+    "errors.deadletterqueue.topic.name": "dlq.kyc_responses",
+    "errors.deadletterqueue.context.headers.enable": "true",
+    "errors.log.enable": "true",
+    "errors.log.include.messages": "true",
+
+    "tasks.max": "1",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": "false"
+  }
+}
