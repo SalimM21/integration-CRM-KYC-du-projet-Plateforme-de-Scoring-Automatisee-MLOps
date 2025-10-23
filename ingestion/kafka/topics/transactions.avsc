@@ -1,1 +1,60 @@
-# Schéma Avro pour les transactions
+{
+  "type": "record",
+  "name": "Transaction",
+  "namespace": "com.example.transactions",
+  "doc": "Schéma Avro pour les transactions financières",
+  "fields": [
+    {
+      "name": "transaction_id",
+      "type": "string",
+      "doc": "Identifiant unique de la transaction"
+    },
+    {
+      "name": "customer_id",
+      "type": "string",
+      "doc": "Identifiant du client associé"
+    },
+    {
+      "name": "account_id",
+      "type": "string",
+      "doc": "Identifiant du compte"
+    },
+    {
+      "name": "transaction_type",
+      "type": "string",
+      "doc": "Type de transaction (credit, debit, transfer, payment, etc.)"
+    },
+    {
+      "name": "amount",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 15,
+        "scale": 2
+      },
+      "doc": "Montant de la transaction en unité monétaire"
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "doc": "Devise de la transaction (ex: USD, EUR, MAD)"
+    },
+    {
+      "name": "timestamp",
+      "type": {"type": "long", "logicalType": "timestamp-millis"},
+      "doc": "Date et heure de la transaction"
+    },
+    {
+      "name": "status",
+      "type": ["null", "string"],
+      "default": "completed",
+      "doc": "Statut de la transaction (completed, pending, failed, cancelled)"
+    },
+    {
+      "name": "description",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Description optionnelle de la transaction"
+    }
+  ]
+}
