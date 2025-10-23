@@ -1,1 +1,56 @@
-# Config topics (partitions, retention, DLQ)
+# ==============================
+# Configuration des topics Kafka
+# ==============================
+
+topics:
+  - name: crm_customers
+    partitions: 3
+    replication_factor: 1
+    cleanup_policy: delete
+    retention.ms: 604800000   # 7 jours
+    config:
+      "min.insync.replicas": 1
+
+  - name: crm_customers_dw
+    partitions: 3
+    replication_factor: 1
+    cleanup_policy: compact
+    retention.ms: 2592000000  # 30 jours
+    config:
+      "min.insync.replicas": 1
+
+  - name: dlq.crm_customers
+    partitions: 1
+    replication_factor: 1
+    cleanup_policy: delete
+    retention.ms: 604800000   # 7 jours
+
+  - name: dlq.crm_customers_s3
+    partitions: 1
+    replication_factor: 1
+    cleanup_policy: delete
+    retention.ms: 604800000   # 7 jours
+
+  - name: kyc_responses
+    partitions: 2
+    replication_factor: 1
+    cleanup_policy: delete
+    retention.ms: 259200000  # 3 jours
+
+  - name: dlq.kyc_responses
+    partitions: 1
+    replication_factor: 1
+    cleanup_policy: delete
+    retention.ms: 604800000  # 7 jours
+
+  - name: transactions
+    partitions: 5
+    replication_factor: 1
+    cleanup_policy: delete
+    retention.ms: 1209600000  # 14 jours
+
+  - name: dlq.transactions
+    partitions: 1
+    replication_factor: 1
+    cleanup_policy: delete
+    retention.ms: 604800000  # 7 jours
