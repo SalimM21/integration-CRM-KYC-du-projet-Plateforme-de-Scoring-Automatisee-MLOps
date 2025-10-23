@@ -1,1 +1,82 @@
-# Schéma de validation transaction
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Transaction Schema",
+  "description": "Schéma de validation pour les transactions financières (flux Kafka).",
+  "type": "object",
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Identifiant unique de la transaction."
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Identifiant du client associé à la transaction."
+    },
+    "account_id": {
+      "type": "string",
+      "description": "Identifiant du compte bancaire associé."
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Montant de la transaction (en devise locale)."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Code de la devise ISO 4217 (ex: MAD, EUR, USD)."
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": ["deposit", "withdrawal", "payment", "transfer", "refund"],
+      "description": "Type d’opération financière."
+    },
+    "channel": {
+      "type": "string",
+      "enum": ["ATM", "POS", "WEB", "MOBILE", "BRANCH"],
+      "description": "Canal d’origine de la transaction."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "failed", "pending", "reversed"],
+      "description": "Statut opérationnel de la transaction."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Horodatage de l’exécution de la transaction."
+    },
+    "location": {
+      "type": ["object", "null"],
+      "description": "Localisation géographique de la transaction.",
+      "properties": {
+        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+        "country": { "type": "string" },
+        "city": { "type": "string" }
+      },
+      "required": ["latitude", "longitude"]
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "description": "Métadonnées additionnelles pour audit ou analyse de fraude.",
+      "properties": {
+        "device_id": { "type": "string" },
+        "ip_address": { "type": "string", "format": "ipv4" },
+        "merchant_id": { "type": "string" }
+      }
+    }
+  },
+  "required": [
+    "transaction_id",
+    "customer_id",
+    "account_id",
+    "amount",
+    "currency",
+    "transaction_type",
+    "status",
+    "timestamp"
+  ],
+  "additionalProperties": false
+}
