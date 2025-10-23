@@ -1,1 +1,69 @@
-# Schéma de validation CRM
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CRM Customer Schema",
+  "description": "Schéma de validation des enregistrements clients provenant du CRM (Postgres/MySQL via Debezium).",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Identifiant unique du client dans le CRM."
+    },
+    "first_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Prénom du client."
+    },
+    "last_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Nom du client."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Adresse e-mail du client."
+    },
+    "phone_number": {
+      "type": ["string", "null"],
+      "pattern": "^[+0-9\\s-]{7,20}$",
+      "description": "Numéro de téléphone du client."
+    },
+    "address": {
+      "type": ["object", "null"],
+      "properties": {
+        "street": { "type": "string" },
+        "city": { "type": "string" },
+        "postal_code": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "required": ["street", "city", "postal_code", "country"]
+    },
+    "account_status": {
+      "type": "string",
+      "enum": ["active", "inactive", "pending", "suspended"],
+      "description": "Statut actuel du compte client."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Horodatage de création du compte dans le CRM."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Horodatage de la dernière mise à jour."
+    }
+  },
+  "required": [
+    "customer_id",
+    "first_name",
+    "last_name",
+    "email",
+    "account_status",
+    "created_at"
+  ],
+  "additionalProperties": false
+}
