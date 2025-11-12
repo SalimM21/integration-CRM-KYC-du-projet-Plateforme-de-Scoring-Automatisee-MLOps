@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyc-api
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kyc-api
+  template:
+    metadata:
+      labels:
+        app: kyc-api
+    spec:
+      containers:
+      - name: kyc-api
+        image: python:3.9-slim
+        ports:
+        - containerPort: 8080
+        command: ["python", "-c"]
+        args:
+        - |
+          from flask import Flask, jsonify
+          import json
+          import time
+          import random
+
+          app = Flask(__name__)
+
+          @app.route('/kyc-data', methods=['GET'])
+          def get_kyc_data():
+              # Simuler des données KYC
+              kyc_data = {
+                  "customer_id": f"CUST{random.randint(1000,9999)}",
+                  "kyc_status": random.choice(["VERIFIED", "PENDING", "REJECTED"]),
+                  "risk_score": random.uniform(0.1, 0.9),
+                  "documents_verified": random.choice([True, False]),
+                  "timestamp": int(time.time() * 1000)
+              }
+              return jsonify(kyc_data)
+
+          if __name__ == '__main__':
+              app.run(host='0.0.0.0', port=8080)
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kyc-api-service
+  namespace: default
+spec:
+  selector:
+    app: kyc-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP

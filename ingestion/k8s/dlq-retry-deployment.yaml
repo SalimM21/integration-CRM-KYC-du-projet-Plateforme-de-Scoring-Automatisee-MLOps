@@ -1,0 +1,194 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dlq-retry-handler
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dlq-retry-handler
+  template:
+    metadata:
+      labels:
+        app: dlq-retry-handler
+    spec:
+      containers:
+      - name: dlq-handler
+        image: python:3.9-slim
+        command: ["python", "-c"]
+        args:
+        - |
+          import os
+          import sys
+          import subprocess
+
+          # Installer les dépendances
+          subprocess.run([sys.executable, "-m", "pip", "install", "kafka-python", "pyspark", "delta-spark"])
+
+          # Configuration des variables d'environnement
+          os.environ["BOOTSTRAP_SERVERS"] = "my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+          os.environ["DLQ_TOPIC"] = "dlq.crm-customers"
+          os.environ["RETRY_TOPIC"] = "crm-customers"
+          os.environ["MINIO_ACCESS_KEY"] = "minio"
+          os.environ["MINIO_SECRET_KEY"] = "minio123"
+          os.environ["MINIO_ENDPOINT"] = "http://minio-service.storage.svc.cluster.local:9000"
+          os.environ["ARCHIVE_PATH"] = "s3a://data-lake/dlq_archive/"
+
+          # Code du DLQ Handler (version simplifiée)
+          import json
+          import time
+          from datetime import datetime
+          from kafka import KafkaConsumer, KafkaProducer
+
+          def validate_message(payload, schema_path):
+              # Validation basique - à améliorer avec un vrai validateur de schéma
+              return isinstance(payload, dict) and len(payload) > 0
+
+          def archive_message(data, reason):
+              print(f"[📦] Message archivé: {reason}")
+              # Archivage simplifié - en production utiliser Spark/Delta
+              with open(f"/tmp/dlq_archive_{int(time.time())}.json", "w") as f:
+                  json.dump({"data": data, "reason": reason, "timestamp": datetime.utcnow().isoformat()}, f)
+
+          class DLQHandler:
+              def __init__(self):
+                  self.consumer = KafkaConsumer(
+                      os.getenv("DLQ_TOPIC"),
+                      bootstrap_servers=os.getenv("BOOTSTRAP_SERVERS"),
+                      auto_offset_reset="earliest",
+                      enable_auto_commit=True,
+                      value_deserializer=lambda x: json.loads(x.decode("utf-8")),
+                  )
+                  self.producer = KafkaProducer(
+                      bootstrap_servers=os.getenv("BOOTSTRAP_SERVERS"),
+                      value_serializer=lambda x: json.dumps(x).encode("utf-8"),
+                  )
+                  print(f"[🔧] DLQHandler initialisé")
+
+              def process_message(self, msg):
+                  data = msg.value
+                  retry_count = data.get("retry_count", 0)
+                  print(f"[📥] Message DLQ reçu: retry_count={retry_count}")
+
+                  if validate_message(data.get("payload", {}), data.get("schema_path", "")):
+                      if retry_count < 3:
+                          data["retry_count"] = retry_count + 1
+                          self.producer.send(os.getenv("RETRY_TOPIC"), value=data)
+                          print(f"[✅] Message renvoyé vers retry")
+                      else:
+                          archive_message(data, "Max retry atteint")
+                  else:
+                      archive_message(data, "Validation échouée")
+
+              def run(self):
+                  print("[🚀] DLQHandler démarré...")
+                  for msg in self.consumer:
+                      try:
+                          self.process_message(msg)
+                          time.sleep(5)
+                      except Exception as e:
+                          print(f"[⚠️] Erreur: {e}")
+
+          handler = DLQHandler()
+          handler.run()
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: retry-manager
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: retry-manager
+  template:
+    metadata:
+      labels:
+        app: retry-manager
+    spec:
+      containers:
+      - name: retry-manager
+        image: python:3.9-slim
+        command: ["python", "-c"]
+        args:
+        - |
+          import os
+          import sys
+          import subprocess
+          import json
+          import time
+          from datetime import datetime
+          from kafka import KafkaConsumer, KafkaProducer
+
+          # Installer les dépendances
+          subprocess.run([sys.executable, "-m", "pip", "install", "kafka-python"])
+
+          # Configuration
+          os.environ["BOOTSTRAP_SERVERS"] = "my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+          os.environ["DLQ_TOPIC"] = "dlq.crm-customers"
+          os.environ["RETRY_TOPIC"] = "crm-customers"
+
+          def validate_message(payload, schema_path):
+              return isinstance(payload, dict) and len(payload) > 0
+
+          def archive_failed_message(data, reason):
+              with open(f"/tmp/archive_{int(time.time())}.json", "w") as f:
+                  json.dump({"data": data, "reason": reason, "timestamp": datetime.utcnow().isoformat()}, f)
+              print(f"[📦] Message archivé")
+
+          def process_message(msg, producer):
+              data = msg.value
+              payload = data.get("payload", {})
+              retry_count = data.get("retry_count", 0)
+
+              print(f"[📥] Message DLQ reçu: retry={retry_count}")
+
+              if validate_message(payload, data.get("schema_path", "")):
+                  if retry_count < 3:
+                      data["retry_count"] = retry_count + 1
+                      producer.send(os.getenv("RETRY_TOPIC"), value=data)
+                      print(f"[✅] Message renvoyé vers retry")
+                  else:
+                      archive_failed_message(data, "Max retry atteint")
+              else:
+                  archive_failed_message(data, "Validation échouée")
+
+          def run():
+              consumer = KafkaConsumer(
+                  os.getenv("DLQ_TOPIC"),
+                  bootstrap_servers=os.getenv("BOOTSTRAP_SERVERS"),
+                  auto_offset_reset="earliest",
+                  enable_auto_commit=True,
+                  group_id="retry_manager_group",
+                  value_deserializer=lambda x: json.loads(x.decode("utf-8")),
+              )
+              producer = KafkaProducer(
+                  bootstrap_servers=os.getenv("BOOTSTRAP_SERVERS"),
+                  value_serializer=lambda x: json.dumps(x).encode("utf-8"),
+              )
+
+              print("[🚀] Retry Manager démarré")
+              for msg in consumer:
+                  try:
+                      process_message(msg, producer)
+                      time.sleep(10)
+                  except Exception as e:
+                      print(f"[⚠️] Erreur: {e}")
+
+          run()
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
