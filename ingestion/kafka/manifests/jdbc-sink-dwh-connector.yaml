@@ -1,0 +1,33 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: jdbc-sink-dwh
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-connect-cluster
+spec:
+  class: io.confluent.connect.jdbc.JdbcSinkConnector
+  tasksMax: 1
+  config:
+    topics: crm_customers
+    connection.url: jdbc:postgresql://postgresql.storage.svc.cluster.local:5432/postgres
+    connection.user: postgres
+    connection.password: "xEFgk32R9k"
+    auto.create: "true"
+    auto.evolve: "true"
+    insert.mode: "upsert"
+    pk.mode: "record_key"
+    pk.fields: "id"
+    table.name.format: "crm_customers_dw"
+    batch.size: "500"
+    max.retries: "10"
+    retry.backoff.ms: "5000"
+    errors.tolerance: "all"
+    errors.deadletterqueue.topic.name: "dlq.crm_customers"
+    errors.deadletterqueue.context.headers.enable: "true"
+    errors.log.enable: "true"
+    errors.log.include.messages: "true"
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    key.converter.schemas.enable: "false"
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter.schemas.enable: "false"

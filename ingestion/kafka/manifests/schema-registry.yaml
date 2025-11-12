@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apicurio-registry
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apicurio-registry
+  template:
+    metadata:
+      labels:
+        app: apicurio-registry
+    spec:
+      containers:
+      - name: apicurio-registry
+        image: quay.io/apicurio/apicurio-registry-mem:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: REGISTRY_AUTH_ENABLED
+          value: "false"
+        - name: REGISTRY_UI_CONFIG_UI_COMMITS
+          value: "false"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apicurio-registry-service
+  namespace: kafka
+spec:
+  selector:
+    app: apicurio-registry
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP

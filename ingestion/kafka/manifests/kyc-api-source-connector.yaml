@@ -1,0 +1,25 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: kyc-api-source
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-connect-cluster
+spec:
+  class: io.github.jeffpalm.kafka.connect.rest.RestSourceConnector
+  tasksMax: 1
+  config:
+    topic: kyc_responses
+    rest.url: "http://kyc-api-service:8080/kyc-data" # Placeholder URL
+    http.method: "GET"
+    poll.interval.ms: "300000"
+    request.headers: "Authorization:Bearer YOUR_KYC_API_TOKEN" # Placeholder Token
+    response.converter: org.apache.kafka.connect.json.JsonConverter
+    response.converter.schemas.enable: "false"
+    errors.tolerance: "all"
+    errors.deadletterqueue.topic.name: "dlq.kyc_responses"
+    errors.deadletterqueue.context.headers.enable: "true"
+    errors.log.enable: "true"
+    errors.log.include.messages: "true"
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    key.converter.schemas.enable: "false"
