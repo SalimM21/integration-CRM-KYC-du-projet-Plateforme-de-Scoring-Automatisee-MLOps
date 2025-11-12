@@ -1,49 +1,28 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaConnect
 metadata:
-  name: file-rouge-connect
+  name: my-connect-cluster
   namespace: kafka
 spec:
-  version: 3.5.1
+  version: 4.1.0
   replicas: 1
-  bootstrapServers: file-rouge-cluster-kafka-bootstrap:9092
+  bootstrapServers: my-cluster-kafka-bootstrap:9092
   config:
-    group.id: "file-rouge-connect-group"
-    offset.storage.topic: "connect-offsets"
-    config.storage.topic: "connect-configs"
-    status.storage.topic: "connect-status"
-    key.converter: "io.confluent.connect.avro.AvroConverter"
-    key.converter.schema.registry.url: "http://schema-registry:8081"
-    value.converter: "io.confluent.connect.avro.AvroConverter"
-    value.converter.schema.registry.url: "http://schema-registry:8081"
-    offset.flush.interval.ms: 10000
-    consumer.auto.offset.reset: earliest
+    group.id: connect-cluster
+    offset.storage.topic: connect-cluster-offsets
+    config.storage.topic: connect-cluster-configs
+    status.storage.topic: connect-cluster-status
+    offset.storage.replication.factor: 1
+    config.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    key.converter.schemas.enable: false
+    value.converter.schemas.enable: false
   resources:
     requests:
-      memory: 1Gi
+      memory: 2Gi
       cpu: 500m
     limits:
       memory: 2Gi
       cpu: 1
-  bootstrapServers: file-rouge-cluster-kafka-bootstrap:9092
-  logging:
-    type: inline
-    loggers:
-      connect.root.logger.level: "INFO"
-  # Persistence pour les offsets et configs
-  storage:
-    type: persistent-claim
-    size: 5Gi
-    deleteClaim: false
-    class: standard
-  # Secrets pour authentification Kafka
-  authentication:
-    type: scram-sha-512
-    usernameSecret:
-      secretName: file-rouge-user
-      key: username
-    passwordSecret:
-      secretName: file-rouge-user
-      key: password
-  # Déployer les connecteurs automatiquement via CRD KafkaConnector (optionnel)
-  # Connectors doivent être définis ensuite dans des fichiers KafkaConnector CRD
