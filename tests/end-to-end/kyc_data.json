@@ -1,0 +1,37 @@
+[
+  {
+    "customer_id": "CUST001",
+    "kyc_status": "VERIFIED",
+    "risk_score": 0.15,
+    "documents_verified": true,
+    "verification_date": 1730419200000
+  },
+  {
+    "customer_id": "CUST002",
+    "kyc_status": "VERIFIED",
+    "risk_score": 0.08,
+    "documents_verified": true,
+    "verification_date": 1730505600000
+  },
+  {
+    "customer_id": "CUST003",
+    "kyc_status": "VERIFIED",
+    "risk_score": 0.22,
+    "documents_verified": true,
+    "verification_date": 1730592000000
+  },
+  {
+    "customer_id": "CUST004",
+    "kyc_status": "PENDING",
+    "risk_score": 0.45,
+    "documents_verified": false,
+    "verification_date": 1730678400000
+  },
+  {
+    "customer_id": "CUST005",
+    "kyc_status": "VERIFIED",
+    "risk_score": 0.12,
+    "documents_verified": true,
+    "verification_date": 1730764800000
+  }
+]

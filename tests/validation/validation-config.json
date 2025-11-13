@@ -1,0 +1,234 @@
+{
+  "validation": {
+    "name": "MLOps Scoring Platform Final Validation",
+    "version": "1.0.0",
+    "description": "Comprehensive validation suite for production readiness",
+    "timeout": 3600,
+    "parallel_execution": true,
+    "fail_fast": false
+  },
+  "e2e": {
+    "enabled": true,
+    "base_url": "http://localhost:8000",
+    "timeout": 30,
+    "retries": 3,
+    "test_scenarios": [
+      "complete_scoring_flow",
+      "model_management_flow",
+      "feature_store_flow",
+      "monitoring_flow",
+      "user_journey",
+      "error_handling"
+    ],
+    "data_sets": [
+      "test_customers_small.csv",
+      "test_customers_large.csv",
+      "edge_cases.json"
+    ]
+  },
+  "load": {
+    "enabled": true,
+    "duration": 300,
+    "concurrency": 100,
+    "ramp_up": 60,
+    "ramp_down": 30,
+    "think_time": 1,
+    "target_throughput": 1000,
+    "latency_thresholds": {
+      "p50": 200,
+      "p95": 500,
+      "p99": 1000
+    },
+    "error_rate_threshold": 0.01
+  },
+  "stress": {
+    "enabled": true,
+    "max_concurrency": 1000,
+    "duration": 600,
+    "failure_threshold": 0.1,
+    "resource_thresholds": {
+      "cpu": 0.9,
+      "memory": 0.9,
+      "disk": 0.8
+    },
+    "recovery_time_max": 300
+  },
+  "security": {
+    "enabled": true,
+    "scan_depth": "deep",
+    "vulnerability_threshold": "medium",
+    "compliance_frameworks": ["OWASP", "NIST", "ISO27001"],
+    "test_types": [
+      "authentication",
+      "authorization",
+      "input_validation",
+      "sql_injection",
+      "xss",
+      "csrf",
+      "rate_limiting",
+      "encryption",
+      "data_leakage"
+    ],
+    "scan_targets": [
+      "api_endpoints",
+      "web_interfaces",
+      "databases",
+      "infrastructure"
+    ]
+  },
+  "compliance": {
+    "enabled": true,
+    "gdpr_enabled": true,
+    "pci_enabled": true,
+    "sox_enabled": true,
+    "hipaa_enabled": false,
+    "audit_retention_days": 2555,
+    "data_residency_requirements": ["EU", "US"],
+    "encryption_standards": ["AES-256", "TLS-1.3"],
+    "access_control_models": ["RBAC", "ABAC"],
+    "audit_trail_requirements": {
+      "log_retention": "7_years",
+      "immutable_logs": true,
+      "tamper_detection": true
+    }
+  },
+  "chaos": {
+    "enabled": true,
+    "experiments": [
+      {
+        "name": "pod_kill",
+        "description": "Kill random pods to test resilience",
+        "targets": ["scoring-api", "mlflow", "kafka"],
+        "kill_count": 2,
+        "interval": 60,
+        "duration": 300
+      },
+      {
+        "name": "network_delay",
+        "description": "Introduce network latency",
+        "latency_ms": 500,
+        "jitter_ms": 100,
+        "duration": 120,
+        "targets": ["api_to_database", "api_to_cache"]
+      },
+      {
+        "name": "resource_stress",
+        "description": "Stress system resources",
+        "cpu_stress": 0.8,
+        "memory_stress": 0.8,
+        "duration": 180
+      },
+      {
+        "name": "disk_pressure",
+        "description": "Simulate disk space issues",
+        "disk_usage_target": 0.95,
+        "duration": 120
+      }
+    ],
+    "recovery_timeout": 60,
+    "stability_check_duration": 300
+  },
+  "resilience": {
+    "enabled": true,
+    "failure_scenarios": [
+      {
+        "name": "database_failure",
+        "description": "Test database connection loss",
+        "failure_duration": 30,
+        "recovery_validation": true
+      },
+      {
+        "name": "cache_failure",
+        "description": "Test Redis/cache failure",
+        "failure_duration": 45,
+        "recovery_validation": true
+      },
+      {
+        "name": "service_crash",
+        "description": "Test service crashes",
+        "restart_delay": 10,
+        "recovery_validation": true
+      },
+      {
+        "name": "network_partition",
+        "description": "Test network partitions",
+        "partition_duration": 60,
+        "affected_services": ["api", "database"]
+      }
+    ],
+    "recovery_validation": true,
+    "data_consistency_checks": true
+  },
+  "slo_sli": {
+    "enabled": true,
+    "targets": {
+      "availability": {
+        "target": 0.999,
+        "warning_threshold": 0.99,
+        "critical_threshold": 0.95
+      },
+      "latency_p95": {
+        "target": 500,
+        "warning_threshold": 750,
+        "critical_threshold": 1000,
+        "unit": "milliseconds"
+      },
+      "throughput": {
+        "target": 1000,
+        "warning_threshold": 750,
+        "critical_threshold": 500,
+        "unit": "requests_per_second"
+      },
+      "error_rate": {
+        "target": 0.001,
+        "warning_threshold": 0.005,
+        "critical_threshold": 0.01,
+        "unit": "percentage"
+      },
+      "data_freshness": {
+        "target": 3600,
+        "warning_threshold": 7200,
+        "critical_threshold": 14400,
+        "unit": "seconds"
+      }
+    },
+    "measurement_window": "24h",
+    "reporting_interval": "1h"
+  },
+  "reporting": {
+    "enabled": true,
+    "formats": ["json", "html", "pdf", "junit"],
+    "destinations": ["local", "s3", "email"],
+    "retention_days": 90,
+    "alerting": {
+      "enabled": true,
+      "channels": ["slack", "email", "pagerduty"],
+      "failure_thresholds": {
+        "critical": 0,
+        "warning": 0.05
+      }
+    }
+  },
+  "environment": {
+    "type": "validation",
+    "cluster": "validation-cluster",
+    "region": "us-east-1",
+    "resources": {
+      "reserved_cpu": "4",
+      "reserved_memory": "8Gi",
+      "max_pods": 100
+    },
+    "networking": {
+      "vpc_cidr": "10.0.0.0/16",
+      "subnet_cidrs": ["10.0.1.0/24", "10.0.2.0/24"],
+      "security_groups": ["validation-sg"]
+    }
+  },
+  "cleanup": {
+    "enabled": true,
+    "test_data_cleanup": true,
+    "log_cleanup": true,
+    "resource_cleanup": true,
+    "snapshot_retention_days": 30
+  }
+}

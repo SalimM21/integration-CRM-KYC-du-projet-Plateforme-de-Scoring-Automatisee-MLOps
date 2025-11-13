@@ -1,0 +1,38 @@
+[
+  {
+    "customer_id": "CUST001",
+    "features": {
+      "age": 35,
+      "income": 45000,
+      "debt_ratio": 0.25,
+      "employment_years": 8,
+      "credit_history_length": 12,
+      "num_credit_lines": 3,
+      "revolving_utilization": 0.15
+    }
+  },
+  {
+    "customer_id": "CUST002",
+    "features": {
+      "age": 42,
+      "income": 65000,
+      "debt_ratio": 0.18,
+      "employment_years": 15,
+      "credit_history_length": 18,
+      "num_credit_lines": 5,
+      "revolving_utilization": 0.08
+    }
+  },
+  {
+    "customer_id": "CUST003",
+    "features": {
+      "age": 28,
+      "income": 32000,
+      "debt_ratio": 0.35,
+      "employment_years": 3,
+      "credit_history_length": 5,
+      "num_credit_lines": 2,
+      "revolving_utilization": 0.22
+    }
+  }
+]
